@@ -1,0 +1,47 @@
+# ============================================================================
+# variables.yaml —— 变量显示元数据（标签、单位、颜色）
+# 单位以 NetCDF/CSV metadata 为准；此处仅用于绘图显示，不做换算依据。
+# ============================================================================
+
+variables:
+  # ---- 观测（阿里站 / 站点气溶胶化学）----
+  PM1:      {label: "PM₁",      unit: "µg m⁻³", color: "#172B4D"}
+  PM25:     {label: "PM₂.₅",    unit: "µg m⁻³", color: "#1F3B57"}
+  PM10:     {label: "PM₁₀",     unit: "µg m⁻³", color: "#33526B"}
+  OA:       {label: "OA",       unit: "µg m⁻³", color: "#2F6B8A"}
+  SO4:      {label: "SO₄",      unit: "µg m⁻³", color: "#D18B2C"}
+  NH4:      {label: "NH₄",      unit: "µg m⁻³", color: "#9B6A9E"}
+  NO3:      {label: "NO₃",      unit: "µg m⁻³", color: "#5B8E55"}
+  BC:       {label: "BC",       unit: "µg m⁻³", color: "#343A40"}
+  BBOA:     {label: "BBOA",     unit: "µg m⁻³", color: "#C85A3A"}
+  agBBOA:   {label: "agBBOA",   unit: "µg m⁻³", color: "#E6A43C"}
+  OOA:      {label: "OOA",      unit: "µg m⁻³", color: "#397F74"}
+  CO:       {label: "CO",       unit: "ppb",    color: "#5677A6"}
+  O3:       {label: "O₃",       unit: "ppb",    color: "#A34E69"}
+  Ox:       {label: "Oₓ",       unit: "ppb",    color: "#7C5AA6"}
+
+  # ---- 火点 ----
+  fire_count: {label: "火点数",   unit: "count", color: "#B23A2E"}
+  frp_sum:    {label: "FRP 合计", unit: "MW",    color: "#D8593B"}
+  frp_mean:   {label: "FRP 均值", unit: "MW",    color: "#E07A3F"}
+
+  # ---- ERA5 单层 ----
+  t2m:  {label: "2m 气温",     unit: "K",     color: "#C85A3A"}
+  tp:   {label: "总降水",      unit: "m",     color: "#2F6B8A"}
+  blh:  {label: "边界层高度",  unit: "m",     color: "#5B8E55"}
+  u10:  {label: "10m 纬向风",  unit: "m s⁻¹", color: "#4E79A7"}
+  v10:  {label: "10m 经向风",  unit: "m s⁻¹", color: "#7C5AA6"}
+  sp:   {label: "地表气压",    unit: "Pa",    color: "#74828F"}
+  rh:   {label: "相对湿度",    unit: "%",     color: "#3F8C78"}
+  wind_speed: {label: "风速",  unit: "m s⁻¹", color: "#4E79A7"}
+
+  # ---- ERA5 气压层 ----
+  u: {label: "纬向风 u",   unit: "m s⁻¹", color: "#4E79A7"}
+  v: {label: "经向风 v",   unit: "m s⁻¹", color: "#7C5AA6"}
+  z: {label: "位势",       unit: "m² s⁻²", color: "#74828F"}
+  w: {label: "垂直速度 ω", unit: "Pa s⁻¹", color: "#A34E69"}
+
+# 阶段/时段配色（用于时间序列阴影）
+periods:
+  default:
+    - {name: "研究时段", color: "#E8F0F6"}

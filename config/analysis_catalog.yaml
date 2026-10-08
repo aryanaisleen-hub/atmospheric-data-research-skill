@@ -1,0 +1,225 @@
+# ============================================================================
+# analysis_catalog.yaml —— 可提供的分析与绘图方案（A–F 共 26 项）
+# ----------------------------------------------------------------------------
+# requires: 该图所需的数据能力；AI 只推荐当前数据能满足的图。
+# renderer: 对应 scripts/research_kit/plotting/figures.py 中的渲染函数名。
+# 每个方案都带 rationale，供 AI 向用户解释"为什么推荐这张图"。
+# ============================================================================
+
+groups:
+  A: {title: "时间变化", desc: "变量随时间的演变，识别污染过程与火点活动的时间结构"}
+  B: {title: "空间分布", desc: "火点/FRP/风场的空间格局，定位源区与输送路径"}
+  C: {title: "气象分析", desc: "各高度风场与近地面气象要素，刻画输送与扩散条件"}
+  D: {title: "相关性", desc: "火点/气象与 PM1 的同期相关，量化潜在联系"}
+  E: {title: "时间滞后", desc: "超前-滞后相关，考察输送/老化所需的时间尺度"}
+  F: {title: "综合图", desc: "多要素叠加，呈现污染过程的整体图景"}
+
+# 数据能力键：station / fire / era5_single / era5_pressure[:level]
+options:
+  - id: 1
+    group: A
+    title: "PM1 时间序列"
+    renderer: timeseries_station
+    requires: [station]
+    rationale: "先建立观测端的时间基线，作为后续与火点/气象对比的参照。"
+    keywords: [pm1, pm2.5, 时间序列, 观测]
+
+  - id: 2
+    group: A
+    title: "火点数量时间序列"
+    renderer: timeseries_fire_count
+    requires: [fire]
+    rationale: "火点数量反映燃烧活动的日变化，是源强的时间代理。"
+    keywords: [火点, 数量, 时间序列, 生物质燃烧]
+
+  - id: 3
+    group: A
+    title: "FRP 时间序列"
+    renderer: timeseries_frp
+    requires: [fire]
+    rationale: "FRP 表征燃烧释放的辐射能强弱，比单纯计数更能反映源强。"
+    keywords: [frp, 火辐射功率, 时间序列, 源强]
+
+  - id: 4
+    group: A
+    title: "PM1 + 火点 双时间序列"
+    renderer: timeseries_dual
+    requires: [station, fire]
+    rationale: "把观测与源强画在同一时间轴上，直观判断二者是否同步。"
+    keywords: [pm1, 火点, 双轴, 同步]
+
+  - id: 5
+    group: B
+    title: "火点空间分布"
+    renderer: map_fire_points
+    requires: [fire]
+    rationale: "定位火点集中区域，确认源区是否落在研究区内。"
+    keywords: [火点, 空间分布, 源区]
+
+  - id: 6
+    group: B
+    title: "FRP 空间分布"
+    renderer: map_frp_grid
+    requires: [fire]
+    rationale: "以 FRP 加权呈现强燃烧区，突出主要排放源。"
+    keywords: [frp, 空间, 网格, 源区]
+
+  - id: 7
+    group: B
+    title: "火点密度"
+    renderer: map_fire_density
+    requires: [fire]
+    rationale: "网格化火点密度便于定量比较不同子区的燃烧强度。"
+    keywords: [火点, 密度, 网格]
+
+  - id: 8
+    group: B
+    title: "ERA5 风场"
+    renderer: map_wind
+    requires: [era5_pressure]
+    rationale: "风场刻画输送通道，是解释污染物输运的关键。"
+    keywords: [风场, 输送, era5]
+
+  - id: 9
+    group: B
+    title: "火点 + 风场叠加"
+    renderer: map_fire_wind
+    requires: [fire, era5_pressure]
+    rationale: "源区与输送场叠加，可判断火点烟羽是否指向观测站。"
+    keywords: [火点, 风场, 叠加, 输送]
+
+  - id: 10
+    group: C
+    title: "850 hPa 风场"
+    renderer: map_wind_level
+    requires: ["era5_pressure:850"]
+    rationale: "850 hPa 接近低层输送，常代表近地面至低空的输送条件。"
+    keywords: [850, 风场, 低层]
+
+  - id: 11
+    group: C
+    title: "700 hPa 风场"
+    renderer: map_wind_level
+    requires: ["era5_pressure:700"]
+    rationale: "700 hPa 位于中低层，青藏高原输送常关注此高度。"
+    keywords: [700, 风场, 中低层]
+
+  - id: 12
+    group: C
+    title: "500 hPa 风场"
+    renderer: map_wind_level
+    requires: ["era5_pressure:500"]
+    rationale: "500 hPa 反映中层环流背景，用于判断大尺度形势。"
+    keywords: [500, 风场, 中层, 环流]
+
+  - id: 13
+    group: C
+    title: "边界层高度（PBLH）"
+    renderer: timeseries_single_met
+    requires: ["era5_single:blh"]
+    rationale: "边界层高度控制垂直混合与稀释，影响近地面浓度。"
+    keywords: [pblh, 边界层, 混合]
+
+  - id: 14
+    group: C
+    title: "降水"
+    renderer: timeseries_single_met
+    requires: ["era5_single:tp"]
+    rationale: "降水通过湿清除影响气溶胶，是浓度下降的常见驱动。"
+    keywords: [降水, 湿清除, precipitation]
+
+  - id: 15
+    group: C
+    title: "温度"
+    renderer: timeseries_single_met
+    requires: ["era5_single:t2m"]
+    rationale: "温度反映热力条件，与边界层发展和燃烧活动相关。"
+    keywords: [温度, 热力, temperature]
+
+  - id: 16
+    group: D
+    title: "火点数 vs PM1"
+    renderer: scatter_fit
+    requires: [fire, station]
+    rationale: "量化火点活动与 PM1 的同期相关强度。"
+    keywords: [相关, 火点, pm1, scatter]
+
+  - id: 17
+    group: D
+    title: "FRP vs PM1"
+    renderer: scatter_fit
+    requires: [fire, station]
+    rationale: "用源强（FRP）替代计数，检验与 PM1 的线性联系。"
+    keywords: [相关, frp, pm1]
+
+  - id: 18
+    group: D
+    title: "风速 vs PM1"
+    renderer: scatter_fit
+    requires: [era5_single, station]
+    rationale: "风速影响输送与稀释，可检验气象对浓度的调制。"
+    keywords: [相关, 风速, pm1]
+
+  - id: 19
+    group: D
+    title: "降水 vs PM1"
+    renderer: scatter_fit
+    requires: ["era5_single:tp", station]
+    rationale: "检验湿清除在观测浓度下降中的作用。"
+    keywords: [相关, 降水, pm1]
+
+  - id: 20
+    group: D
+    title: "PBLH vs PM1"
+    renderer: scatter_fit
+    requires: ["era5_single:blh", station]
+    rationale: "检验边界层混合对近地面浓度的稀释效应。"
+    keywords: [相关, 边界层, pm1]
+
+  - id: 21
+    group: E
+    title: "火点 → PM1 滞后相关"
+    renderer: lag_correlation
+    requires: [fire, station]
+    rationale: "火点活动影响 PM1 需要输送/老化时间，滞后相关可估计时间尺度。"
+    keywords: [滞后, lag, 火点, pm1]
+
+  - id: 22
+    group: E
+    title: "FRP → PM1 滞后相关"
+    renderer: lag_correlation
+    requires: [fire, station]
+    rationale: "以源强为输入考察滞后响应，识别最佳滞后时间。"
+    keywords: [滞后, frp, pm1]
+
+  - id: 23
+    group: E
+    title: "气象 → PM1 滞后相关"
+    renderer: lag_correlation
+    requires: [era5_single, station]
+    rationale: "考察风/降水/边界层对浓度的超前影响。"
+    keywords: [滞后, 气象, pm1]
+
+  - id: 24
+    group: F
+    title: "火点 + 风场 + PM1 综合图"
+    renderer: composite_fire_wind_pm1
+    requires: [fire, era5_pressure, station]
+    rationale: "把源、输送、受体三者叠加，形成污染过程的完整叙事。"
+    keywords: [综合, 火点, 风场, pm1]
+
+  - id: 25
+    group: F
+    title: "火点 + ERA5 + PM1 综合图"
+    renderer: composite_full
+    requires: [fire, era5_single, station]
+    rationale: "在源-受体框架上叠加近地面气象，刻画过程的环境背景。"
+    keywords: [综合, era5, pm1]
+
+  - id: 26
+    group: F
+    title: "污染过程综合分析图"
+    renderer: composite_episode
+    requires: [fire, era5_single, station]
+    rationale: "围绕污染时段做多面板总览，适合作为报告的总结图。"
+    keywords: [综合, 污染过程, 多面板]

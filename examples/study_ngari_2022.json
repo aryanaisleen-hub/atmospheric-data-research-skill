@@ -1,0 +1,14 @@
+{
+  "title": "2022 年 6 月南亚—青藏高原西部火点活动与阿里站 PM1 关系",
+  "start": "2022-06-01",
+  "end": "2022-06-30",
+  "region": {"north": 40, "south": 20, "west": 60, "east": 90},
+  "station": {"name": "Ngari / Ali", "latitude": 33.39, "longitude": 79.70},
+  "research_question": "研究 2022 年 6 月 1–30 日印度西北部生物质燃烧对阿里站 PM1 的影响，重点考察火点活动与 PM1 的时间关系及输送气象条件。",
+  "station_variables": ["PM1"],
+  "needs_fire": true,
+  "needs_era5_single": true,
+  "needs_era5_pressure": true,
+  "pressure_levels": [850, 700, 600, 500],
+  "firms_products": ["VIIRS_SNPP_SP"]
+}

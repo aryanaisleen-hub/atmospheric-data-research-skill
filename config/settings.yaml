@@ -1,0 +1,72 @@
+# ============================================================================
+# atmospheric-data-research —— 全局设置
+# ----------------------------------------------------------------------------
+# 这里只放"运行参数"，不放任何密钥。API KEY 一律从环境变量读取。
+# ============================================================================
+
+workspace:
+  # 数据落地与产出的根目录。默认在 Skill 内部，自包含、不触碰任何外部项目。
+  # 需要分析已有数据时：把需要的文件"复制"到本工作区，或把 raw_dir 指向只读的
+  # 外部数据目录（Skill 对 raw 数据永远只读，不修改、不删除）。
+  root: "F:/skills/atmospheric-data-research/workspace"
+
+  # 相对 workspace.root 的子目录
+  raw_dir: "data"              # 原始数据（只读，脚本永不修改/删除）
+  processed_dir: "processed"   # 整理后的数据
+  results_dir: "results"       # 分析结果
+  figures_dir: "outputs/figures"
+  tables_dir: "outputs/tables"
+  logs_dir: "logs"
+
+  # 任务记录文件（相对 workspace.root）。断点续传的唯一依据。
+  requests_file: "logs/data_requests.json"
+
+download:
+  # ---- 并发限制（核心要求）----
+  initial_submit: 3          # 首次最多提交 3 个数据申请
+  max_concurrent: 5          # 任意时刻 running/submitted 任务数上限
+  check_interval_minutes: 60 # 定时检查间隔（分钟）
+  max_retries: 3             # 单个任务最多重试次数，超过则 FAILED，不再无限重试
+
+  # ---- FIRMS ----
+  firms_source: "VIIRS_SNPP_SP"   # 默认产品；MODIS 可用 MODIS_SP / MODIS_NRT
+  firms_chunk_days: 5             # FIRMS Area API 单次最多查询 5 天
+  firms_map_key_env: "FIRMS_MAP_KEY"
+
+  # ---- ERA5 / CDS ----
+  cds_retry_max: 2
+  cds_sleep_max: 2
+  cds_timeout: 30
+
+# 区域默认值。用户在需求里没给经纬度时必须先询问，不能擅自使用这些默认值。
+region_defaults:
+  north: 40
+  south: 20
+  west: 60
+  east: 90
+  station:
+    name: "Ngari / Ali"
+    latitude: 33.39
+    longitude: 79.70
+
+plotting:
+  dpi: 300
+  formats: ["png", "pdf", "svg"]      # PNG 必出，PDF/SVG 尽可能出
+  font_family: ["Arial", "Microsoft YaHei", "DejaVu Sans", "SimHei"]
+  use_cartopy: "auto"                 # auto | true | false（auto=检测到就用，否则降级为经纬度坐标轴）
+  colormap_wind: "viridis"
+  colormap_fire: "inferno"
+
+review:
+  # 自动读图审查
+  max_auto_fix: 3                     # 发现问题时最多自动修正 3 次
+  blank_pixel_threshold: 0.995        # 近白像素占比超过该值判为"疑似空白图"
+  ink_ratio_min: 0.005                # 非背景像素占比下限
+
+report:
+  language: "zh"
+  title: "大气环境科研分析报告"
+
+assets:
+  # 地图边界矢量（Natural Earth 110m，已随 Skill 附带）。用于无 cartopy 时绘制国界。
+  boundaries: "assets/boundaries/ne_110m_admin_0_countries.shp"

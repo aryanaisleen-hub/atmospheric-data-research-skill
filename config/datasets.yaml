@@ -1,0 +1,122 @@
+# ============================================================================
+# datasets.yaml —— 数据目录（可扩展，不要把变量写死进代码）
+# ----------------------------------------------------------------------------
+# 代码只读取本文件来生成请求，因此新增变量/气压层/产品只需改这里。
+# ============================================================================
+
+era5:
+  # CDS 数据集名 -> 人类可读标签
+  datasets:
+    reanalysis-era5-single-levels:
+      label: "ERA5 Single Levels"
+      kind: single
+      max_days_per_request: 31        # 单次请求天数上限（超过则自动按月切分）
+    reanalysis-era5-pressure-levels:
+      label: "ERA5 Pressure Levels"
+      kind: pressure
+      max_days_per_request: 31
+      # 气压层数据按"月份 × 变量"提交，规避 CDS 请求体积限制
+      split_by_variable: true
+
+  single_variables:
+    # key = CDS 请求变量名；aliases = NetCDF 中可能出现的短名（用于质检）
+    2m_temperature:
+      label: "2m 气温"
+      unit_hint: "K"
+      aliases: ["t2m", "2m_temperature"]
+      used_for: ["温度背景场", "生物质燃烧期的热力条件"]
+    total_precipitation:
+      label: "总降水"
+      unit_hint: "m"
+      aliases: ["tp", "total_precipitation"]
+      used_for: ["湿沉降/清除", "降水对 PM1 的清除作用"]
+    boundary_layer_height:
+      label: "边界层高度"
+      unit_hint: "m"
+      aliases: ["blh", "boundary_layer_height"]
+      used_for: ["垂直混合能力", "近地面污染物稀释"]
+    10m_u_component_of_wind:
+      label: "10m 纬向风"
+      unit_hint: "m s-1"
+      aliases: ["u10", "10m_u_component_of_wind"]
+      used_for: ["近地面输送方向"]
+    10m_v_component_of_wind:
+      label: "10m 经向风"
+      unit_hint: "m s-1"
+      aliases: ["v10", "10m_v_component_of_wind"]
+      used_for: ["近地面输送方向"]
+    surface_pressure:
+      label: "地表气压"
+      unit_hint: "Pa"
+      aliases: ["sp", "surface_pressure"]
+      used_for: ["地形/气压层有效性判断"]
+    relative_humidity:
+      label: "相对湿度"
+      unit_hint: "%"
+      aliases: ["r", "relative_humidity", "rh"]
+      used_for: ["气溶胶吸湿增长"]
+      optional: true
+
+  pressure_variables:
+    u_component_of_wind:
+      label: "纬向风 u"
+      unit_hint: "m s-1"
+      aliases: ["u", "u_component_of_wind"]
+      used_for: ["输送通道（各高度）"]
+    v_component_of_wind:
+      label: "经向风 v"
+      unit_hint: "m s-1"
+      aliases: ["v", "v_component_of_wind"]
+      used_for: ["输送通道（各高度）"]
+    geopotential:
+      label: "位势"
+      unit_hint: "m2 s-2"
+      aliases: ["z", "geopotential"]
+      used_for: ["环流形势/位势高度"]
+    vertical_velocity:
+      label: "垂直速度 ω"
+      unit_hint: "Pa s-1"
+      aliases: ["w", "omega", "vertical_velocity"]
+      used_for: ["上升/下沉运动", "垂直输送"]
+
+  # 可选气压层（代码按需裁剪，不写死）
+  pressure_levels: [500, 600, 700, 850, 925, 1000]
+
+  # 默认气压层集合（研究输送气象条件的常用层）
+  default_pressure_levels: [500, 600, 700, 850]
+
+  # 请求通用设置
+  request_defaults:
+    product_type: ["reanalysis"]
+    data_format: "netcdf"
+    download_format: "unarchived"
+    time: ["00:00","01:00","02:00","03:00","04:00","05:00","06:00","07:00","08:00","09:00","10:00","11:00",
+           "12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"]
+
+firms:
+  # NASA FIRMS Area API 产品
+  products:
+    VIIRS_SNPP_SP:
+      label: "VIIRS S-NPP（标准处理）"
+      sensor: VIIRS
+      pixel_size: "375 m"
+      fields: ["latitude","longitude","acq_date","acq_time","frp","confidence","daynight"]
+    VIIRS_NOAA20_SP:
+      label: "VIIRS NOAA-20（标准处理）"
+      sensor: VIIRS
+      pixel_size: "375 m"
+      fields: ["latitude","longitude","acq_date","acq_time","frp","confidence","daynight"]
+    MODIS_SP:
+      label: "MODIS（标准处理）"
+      sensor: MODIS
+      pixel_size: "1 km"
+      fields: ["latitude","longitude","acq_date","acq_time","frp","confidence","daynight","satellite"]
+    MODIS_NRT:
+      label: "MODIS（近实时）"
+      sensor: MODIS
+      pixel_size: "1 km"
+      fields: ["latitude","longitude","acq_date","acq_time","frp","confidence","daynight","satellite"]
+
+  # 火点默认保留字段（顺序即输出列顺序）
+  default_fields: ["latitude","longitude","acq_date","acq_time","frp","confidence","daynight"]
+  default_product: "VIIRS_SNPP_SP"
