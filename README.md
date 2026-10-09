@@ -32,12 +32,13 @@
 
 ### 1. 依赖
 
-需要 Python 3.10+，以及：`numpy pandas xarray netCDF4 scipy matplotlib pyyaml requests cdsapi pillow`。
-（`cartopy` 可选；`cdsapi` 仅在真实 ERA5 下载时需要。）
+需要 Python 3.10+。依赖清单见 **`requirements.txt`**：
 
 ```bash
-python -m pip install numpy pandas xarray netCDF4 scipy matplotlib pyyaml requests pillow cdsapi
+python -m pip install -r requirements.txt
 ```
+
+（`cartopy` 可选——有则用其投影，无则降级为经纬度坐标轴；`cdsapi` 仅在真实 ERA5 下载时需要。）
 
 ### 2. 先跑模拟流程（不联网）
 

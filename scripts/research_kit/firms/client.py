@@ -12,14 +12,14 @@ import hashlib
 import io
 import json
 import os
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
 from ..settings import Settings
-from ..store import Task
+from ..store import Task, utcnow
 from ..validation import safe_publish, validate_firms_csv
 
 FIRMS_BASE_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
@@ -106,7 +106,7 @@ def _fetch_chunk(session: Any, url: str, columns: list[str], label: str) -> pd.D
         raise RuntimeError(f"FIRMS 请求失败（{label}；凭据已隐藏）: {type(exc).__name__}") from None
     try:
         raw = pd.read_csv(io.StringIO(response.text), dtype={"acq_time": "string", "confidence": "string"})
-    except Exception as exc:  # noqa: BLE001
+    except (pd.errors.ParserError, UnicodeDecodeError, ValueError) as exc:
         raise RuntimeError(f"FIRMS 返回内容不是有效 CSV（{label}；凭据已隐藏）: {exc}") from None
     missing = [column for column in columns if column not in raw.columns]
     if missing:
@@ -178,11 +178,11 @@ class RealFirmsBackend:
             "completed_chunks": completed,
             "row_count": int(len(combined)),
             "sha256": _sha256(target),
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": utcnow(),
         }
         manifest_path = target.with_suffix(".manifest.json")
         temp_manifest = manifest_path.with_name(f"{manifest_path.name}.building.{os.getpid()}")
         temp_manifest.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        if manifest_path.exists():
-            manifest_path.unlink()
-        safe_publish(temp_manifest, manifest_path)
+        # manifest 是 Skill 自产的派生元数据（非原始数据），允许原子刷新：
+        # 直接用 os.replace 覆盖，避免"先删后写"的空窗，也不与"绝不删除文件"的原则冲突。
+        os.replace(temp_manifest, manifest_path)

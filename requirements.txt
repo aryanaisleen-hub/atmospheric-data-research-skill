@@ -1,0 +1,29 @@
+# atmospheric-data-research —— Python 依赖
+#
+# 安装：
+#   python -m pip install -r requirements.txt
+#
+# 说明：本 Skill 面向 AI/Codex 使用，依赖均为科学计算与数据获取的常用库。
+
+# ---- 核心（分析 + 绘图 + 配置）----
+numpy
+pandas
+xarray
+scipy
+matplotlib
+pyyaml
+
+# ---- NetCDF 读取（ERA5 产物）----
+netCDF4
+
+# ---- 绘图后自动读图（plotting/review.py 使用 PIL 打开 PNG 做质检）----
+pillow
+
+# ---- FIRMS 下载（requests 已在 pandas/xarray 依赖链中，显式声明更稳）----
+requests
+
+# ---- ERA5 真实下载（仅 --real 模式需要；模拟模式无需）----
+cdsapi
+
+# ---- 可选：有则用于地图投影，无则自动降级为经纬度坐标轴 + 附带国界矢量 ----
+# cartopy

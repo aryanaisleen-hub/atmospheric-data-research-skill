@@ -124,7 +124,13 @@ def load_settings(config_dir: Path | None = None, workspace_root: str | Path | N
     catalog = _read_yaml(cdir / "analysis_catalog.yaml")
 
     ws = raw.get("workspace", {})
-    root = Path(workspace_root) if workspace_root else Path(ws["root"])
+    if workspace_root:
+        root = Path(workspace_root)
+    else:
+        # workspace.root 留空时回退到 <skill_root>/workspace，保证 Skill 可移植，
+        # 不把开发机的绝对路径写死进配置。
+        root_value = str(ws.get("root") or "").strip()
+        root = Path(root_value) if root_value else SKILL_ROOT / "workspace"
 
     def sub(key: str, default: str) -> Path:
         value = ws.get(key, default)

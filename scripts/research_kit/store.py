@@ -104,7 +104,7 @@ class TaskStore:
                 json.dump(self.data, handle, ensure_ascii=False, indent=2)
                 handle.write("\n")
             os.replace(tmp, self.path)
-        except Exception:
+        except Exception:  # noqa: BLE001 — 落盘失败时清理临时文件并原样抛出，不掩盖真实错误
             tmp.unlink(missing_ok=True)
             raise
 

@@ -98,7 +98,7 @@ def validate_era5_file(
                 wanted = set(pressure_levels)
                 if not wanted.issubset(found):
                     return False, f"压力层不符: 期望包含 {sorted(wanted)}, 实际 {sorted(found)}"
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001 — NetCDF 读取可能因后端/库差异抛多种异常，统一返回不通过
         return False, f"无法读取为完整 NetCDF: {exc}"
     return True, "完整"
 
@@ -120,7 +120,7 @@ def validate_firms_csv(
         frame = pd.read_csv(
             path, dtype={"acq_time": "string", "confidence": "string", "daynight": "string"}
         )
-    except Exception as exc:  # noqa: BLE001
+    except (pd.errors.ParserError, UnicodeDecodeError, ValueError, OSError) as exc:
         return False, f"无法读取 CSV: {exc}"
     if columns and list(frame.columns) != list(columns):
         return False, f"列名不符；实际为 {list(frame.columns)}"

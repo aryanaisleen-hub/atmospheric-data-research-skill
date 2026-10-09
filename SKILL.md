@@ -1,11 +1,10 @@
 ---
 name: atmospheric-data-research
-description: >
-  给 AI/Codex 使用的大气环境科研数据工作流 Skill。当用户提出大气/气溶胶/污染/火点/
-  生物质燃烧/输送/气象相关的科研任务，需要下载 ERA5 与 NASA FIRMS 数据、申请并跟踪数据任务、
-  检查数据质量、选择分析绘图方案、绘制论文级图件并自动读图解释、生成科研报告时使用。
-  触发词：ERA5、FIRMS、火点、生物质燃烧、PM1、PM2.5、气溶胶、输送、风场、边界层、
-  数据下载、科研绘图、滞后相关、analysis workflow、research data。
+description: 大气环境科研数据全生命周期工作流（ERA5/FIRMS）：数据申请与并发调度、断点续传、数据质检、论文级绘图与自动读图解释。当用户提出大气/气溶胶/污染/火点/生物质燃烧/输送/气象相关科研任务，需要下载 ERA5 与 NASA FIRMS 数据并分析时使用。触发词：ERA5、FIRMS、火点、生物质燃烧、PM1、PM2.5、气溶胶、输送、风场、边界层、科研绘图、滞后相关、analysis workflow、research data。
+metadata:
+  origin: local
+  version: 1.0.0
+  tags: [era5, firms, atmospheric, aerosol, wildfire, research-workflow, data-download]
 ---
 
 # atmospheric-data-research
@@ -137,7 +136,7 @@ FIRMS 数据下载需要 `MAP_KEY`：
 ```
 首次：T1 SUBMITTED, T2 SUBMITTED, T3 SUBMITTED        （3 个）
 检查：T1 COMPLETED, T2 QUEUED,   T3 COMPLETED
-下载：T1 ✔, T3 ✔                                        （释放 2 个名额）
+下载：T1 OK, T3 OK                                      （释放 2 个名额）
 补充：T4 SUBMITTED, T5 SUBMITTED                        （仍 ≤ 5）
 ```
 
@@ -156,7 +155,7 @@ FIRMS 数据下载需要 `MAP_KEY`：
 
 ```
 PENDING → SUBMITTED → QUEUED → RUNNING → COMPLETED → DOWNLOADING → DOWNLOADED(终态)
-             ↘____________↓___________↘ FAILED ⇄ RETRY ↗
+             \____________|___________\ FAILED <=> RETRY /
 ```
 
 | 状态 | 含义 |
@@ -299,6 +298,7 @@ Codex 关闭 / 电脑重启 / 网络断开后，重新运行会：
 atmospheric-data-research/
 ├── SKILL.md                     ← 本文件（AI 工作流说明）
 ├── README.md                    ← 面向人的说明
+├── requirements.txt             ← Python 依赖清单
 ├── config/
 │   ├── settings.yaml            ← 工作区、并发、绘图、审查参数
 │   ├── datasets.yaml            ← ERA5 / FIRMS 数据目录（可扩展）
@@ -356,7 +356,62 @@ python tests/run_all.py                                                  # 运�
 
 ## 23. 工作区与数据隔离
 
-- 默认工作区：`F:/skills/atmospheric-data-research/workspace`（Skill 自包含）。
+- 默认工作区：`<skill_root>/workspace`（即 Skill 自身目录下的 `workspace/`，自包含、可移植，
+  不绑定任何具体机器路径）。可用 `config/settings.yaml → workspace.root` 或命令行 `--workspace` 覆盖。
 - **本 Skill 不修改、不删除任何外部项目的数据。**
 - 需要复用已有数据时：把需要的文件**复制**到工作区，或把 `workspace.raw_dir` 指向只读的外部目录
   （Skill 对 raw 永远只读）。
+
+---
+
+## 24. 反模式（不要这样做）
+
+| 反模式 | 为什么错 |
+|---|---|
+| 把 `FIRMS_MAP_KEY` 的值或 `.cdsapirc` 内容写进 study JSON / 日志 / 报告 / Git | 凭据泄漏，且违反 §20 安全要求 |
+| 用 `region_defaults` 的默认经纬度**代替**用户未提供的区域 | 违背「必须追问、不得猜测」的硬约束 |
+| 用默认时间范围代替用户未提供的起止时间 | 同上 |
+| 首次就提交超过 3 个任务，或让进行中任务数超过 5 | 违反 §8 并发规则 |
+| 超过 `download.max_retries` 后仍无限重提 | 造成请求风暴，应停在 `FAILED` |
+| 仅凭相关系数就声称因果关系 | 科学表述不严谨，须用「可能表明 / 与……一致」 |
+| 覆盖或删除 `raw` 原始数据 | 破坏可追溯性；校验不通过时应**保留**并交用户决定 |
+| 一次性把 26 个分析方案全画出来 | 应先由 `available_options()` 过滤、再由 `recommend_options()` 推荐 |
+
+---
+
+## 25. 最小可运行示例（无需联网 / 无需任何 KEY）
+
+```bash
+# 1) 安装依赖
+python -m pip install -r requirements.txt
+
+# 2) 用合成数据完整跑通：解析 → 申请 → 检查 → 下载 → 质检 → 推荐 → 绘图 → 读图 → 报告
+python examples/run_simulation.py
+# 产物：examples/_runs/<时间戳>/ 下的图件与 analysis_report.md
+```
+
+```python
+# 3) 以代码方式构造研究任务（region / start / end 缺失会抛 MissingRequirementError）
+from research_kit.settings import Region, load_settings
+from research_kit.planning import build_spec
+
+settings = load_settings()          # 默认工作区 = <skill_root>/workspace
+spec = build_spec(
+    title="藏北火点与 PM1 的滞后关系",
+    start="2022-06-01",
+    end="2022-06-30",
+    region=Region(north=40, south=20, west=60, east=90),
+    research_question="生物质燃烧输送对 PM1 的影响",
+    settings=settings,
+)
+```
+
+> 真实下载需在命令后追加 `--real --confirm`，并先按 §5 配置 `FIRMS_MAP_KEY` 与 `.cdsapirc`。
+
+---
+
+## 26. 相关 Skill
+
+- `scientific-thinking-literature-review` —— 文献综述、证据筛选与引用规范
+- `deep-research` —— 跨来源证据检索与综述撰写
+- `research-ops` —— 把重复性数据查询固化为可监控的工作流

@@ -149,7 +149,7 @@ class Orchestrator:
                 continue
             try:
                 request_id, status = backend.submit(task)
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:  # noqa: BLE001 — 后端可插拔（ERA5/FIRMS/模拟），异常统一转为 FAILED 并记录
                 task.attempts += 1
                 task.error_message = f"{type(exc).__name__}: {exc}"
                 task.set_state(TaskState.FAILED, note="提交失败")
@@ -185,7 +185,7 @@ class Orchestrator:
                 continue
             try:
                 status = backend.status(task)
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:  # noqa: BLE001 — 状态查询瞬时失败保持原状态，避免重复提交
                 self.log(f"[check] {task.task_id} 状态查询异常（保持原状态）：{type(exc).__name__}")
                 continue
             task.provider_status = status
@@ -212,7 +212,7 @@ class Orchestrator:
             self.store.update(task)
             try:
                 backend.download(task, target)
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:  # noqa: BLE001 — 下载失败统一转入 FAILED/RETRY 流程并落库
                 task.error_message = f"{type(exc).__name__}: {exc}"
                 task.set_state(TaskState.FAILED, note="下载失败")
                 if task.attempts < int(self.settings.download.get("max_retries", 3)):

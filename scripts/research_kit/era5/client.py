@@ -205,7 +205,7 @@ class RealEra5Backend:
             return "unknown"
         try:
             return self._client._retrieve_api.get_job(request_id)._json_dict.get("status", "unknown")
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001 — cdsapi 内部异常类型不稳定；查询瞬时失败不得误判任务状态
             return "lookup_error"
 
     def download(self, task: Task, target: Path) -> None:

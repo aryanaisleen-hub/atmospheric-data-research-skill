@@ -229,7 +229,7 @@ def _grid_axes(ax, ctx: RenderContext):
         from .boundaries import draw_boundaries
 
         draw_boundaries(ax, ctx.settings, ctx.spec.region)
-    except Exception:  # noqa: BLE001
+    except Exception:  # noqa: BLE001 — 国界是可选叠加层，任何失败都不应中断主图绘制
         pass
     ax.set_xlabel("经度 (°E)")
     ax.set_ylabel("纬度 (°N)")

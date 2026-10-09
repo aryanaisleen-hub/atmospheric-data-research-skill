@@ -120,7 +120,7 @@ def check_era5_task(task: Task, settings: Settings) -> dict[str, Any]:
                     found = sorted({int(round(float(v))) for v in ds[level_name].values.ravel()})
                     row["levels_found"] = ";".join(str(v) for v in found)
                     row["levels_ok"] = set(task.levels).issubset(set(found))
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001 — NetCDF 读取可能因后端/库差异抛多种异常，统一判 FAIL
         row.update({"status": "FAIL", "notes": f"无法读取为完整 NetCDF: {exc}"})
         return row
 
@@ -156,7 +156,7 @@ def check_firms_task(task: Task, settings: Settings) -> dict[str, Any]:
     row["size_bytes"] = path.stat().st_size
     try:
         frame = pd.read_csv(path, dtype={"acq_time": "string", "confidence": "string", "daynight": "string"})
-    except Exception as exc:  # noqa: BLE001
+    except (pd.errors.ParserError, UnicodeDecodeError, ValueError, OSError) as exc:
         row.update({"status": "FAIL", "notes": f"无法读取 CSV: {exc}"})
         return row
 

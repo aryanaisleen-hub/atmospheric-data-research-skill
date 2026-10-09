@@ -38,7 +38,9 @@ def review_figure(png_path: str | Path, settings: Settings) -> Review:
         with Image.open(path) as image:
             image = image.convert("L")
             arr = np.asarray(image, dtype=np.float32) / 255.0
-    except Exception as exc:  # noqa: BLE001
+    except (ImportError, OSError, ValueError) as exc:
+        # ImportError: 未安装 Pillow；OSError: 文件损坏/不可读（含 UnidentifiedImageError）；
+        # ValueError: 图像模式无法转换。
         return Review(ok=False, issues=[f"无法打开图片：{exc}"], metrics=metrics)
 
     height, width = arr.shape
